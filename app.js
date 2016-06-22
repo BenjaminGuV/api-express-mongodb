@@ -53,14 +53,11 @@ server.listen(3000, function() {
 
 
 io.on('connection', function(socket) {
-    console.log( "request.url", socket.request.url );
-    console.log( "xx", socket.handshake.query.name);
 
     url_cliente = socket.handshake.query.name;
 
     sendVisita(function(data) {
         console.log('Send locations to client ' + socket.id);
-        console.log("data", data);
     });
 
     socket.emit('conexion', { bandera: 'true' });
@@ -71,7 +68,6 @@ io.on('connection', function(socket) {
 //envia un post a la api
 function sendVisita(callback) {
     var api_host = 'localhost';
-    console.log("url_cliente", url_cliente);
     var post_data = querystring.stringify({
         'url': url_cliente
     });
@@ -86,20 +82,15 @@ function sendVisita(callback) {
         }
     };
 
-    console.log("options", options);
-    //console.log("socket.handshake.query.name", socket.handshake.query.name);
-
     var req = http.request(options, function(res) {
         //console.log('-----------------------------------------');
         //console.log('STATUS: ' + res.statusCode);
         //console.log('HEADERS: ' + JSON.stringify(res.headers));
         var output = '';
-        console.log("si envio");
 
         res.setEncoding('utf8');
         res.on('data', function(chunk) {
             output += chunk;
-            console.log("output ", output);
         });
 
         res.on('end', function() {
