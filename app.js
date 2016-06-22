@@ -21,22 +21,28 @@ app.use(methodOverride());
 var models            = require('./app/models/visita')(app, mongoose);
 var visitasController = require('./app/controllers/visita');
 
+//declarando rutas de express
 var router = express.Router();
 
+//peticion inicial de la aplicacion GET /
 router.get('/', function(req, res) {
     res.send("¡Ok!");
 });
 
 app.use(router);
 
+//es necesario declar esta ruta para que la aplicacion encuentre
+//el archivo socket.io/socket.io.js
 app.use(express.static("public"));
 
 var rutasVisitas = express.Router();
 
+// api request GET y POST
 rutasVisitas.route('/visita')
     .get(visitasController.findAllVisita)
     .post(visitasController.addVisita);
 
+//agregar una ruta api a las peticiones de api/visita
 app.use('/api', rutasVisitas);
 
 
@@ -47,11 +53,12 @@ mongoose.connect('mongodb://192.168.59.103:27017/test', function(err, res) {
     }
 });
 
+//comienza el servicio Node
 server.listen(3000, function() {
     console.log("Node server running on http://localhost:3000");
 });
 
-
+//empieza el socket io
 io.on('connection', function(socket) {
 
     url_cliente = socket.handshake.query.name;
