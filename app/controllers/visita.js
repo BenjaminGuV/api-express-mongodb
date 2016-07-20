@@ -25,7 +25,6 @@ exports.findAllVisita = function(req, res) {
 // peticion POST
 exports.addVisita = function(req, res) {  
     console.log('POST');
-    console.log(req.body);
 
     //obtenemos los datos del navegador
 	var navegador = parser(req.headers['user-agent']);

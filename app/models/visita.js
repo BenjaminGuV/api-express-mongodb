@@ -7,7 +7,7 @@ var mongoose = require('mongoose'),
 var Visitas = new Schema({  
   ip: { type: String },
   fecha: { type: Date, default: Date.now },
-  so: { type: String },
+  so: { type: String, default: null },
   url: { type: String }
 });
 

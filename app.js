@@ -1,3 +1,6 @@
+//configuracion de puertos y mongo
+var config_base = require('./config.dev.js');
+
 //declarando todas las librerias
 var express = require("express"),
     app            = express(),
@@ -5,12 +8,14 @@ var express = require("express"),
     methodOverride = require("method-override"),
     querystring    = require('querystring')
     mongoose       = require('mongoose'),
-    server         = app.listen(3000),
+    server         = app.listen(config_base.puerto),
     http           = require('http'),
     url            = require('url'),
     io             = require('socket.io').listen(server);
 
+
 var url_cliente = "";
+var g_header_so = "";
 
 //configuracion de la aplicacion
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -47,21 +52,23 @@ app.use('/api', rutasVisitas);
 
 
 //conexion a la base de datos
-mongoose.connect('mongodb://192.168.59.103:27017/test', function(err, res) {
+mongoose.connect(config_base.conexion_mongo, function(err, res) {
     if (err) {
         console.log('ERROR: connecting to Database. ' + err);
     }
 });
 
 //comienza el servicio Node
-server.listen(3000, function() {
-    console.log("Node server running on http://localhost:3000");
+server.listen(config_base.puerto, function() {
+    console.log("Node server running on http://localhost:" + config_base.puerto );
 });
 
 //empieza el socket io
 io.on('connection', function(socket) {
-
+    g_header_so = socket.handshake.headers;
     url_cliente = socket.handshake.query.name;
+
+    console.log( "identificador de cliente", socket.id );
 
     sendVisita(function(data) {
         console.log('Send locations to client ' + socket.id);
@@ -75,17 +82,31 @@ io.on('connection', function(socket) {
 //envia un post a la api
 function sendVisita(callback) {
     var api_host = 'localhost';
+
+
+    if ( typeof url_cliente == "undefined" || url_cliente == "" ) {
+        url_cliente = "N/D"
+    }
+
+    if ( typeof g_header_so['user-agent'] == "undefined" || g_header_so['user-agent'] == "" ) {
+        g_header_so['user-agent'] = "N/D"
+    }
+
+
     var post_data = querystring.stringify({
-        'url': url_cliente
+        'url': url_cliente,
+        'so': g_header_so['user-agent']
     });
+
     var options = {
         hostname: api_host,
-        port: 3000,
+        port: config_base.puerto,
         path: '/api/visita',
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
-            'Content-Length': Buffer.byteLength(post_data)
+            'Content-Length': Buffer.byteLength(post_data),
+            'user-agent': g_header_so['user-agent']
         }
     };
 
